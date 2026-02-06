@@ -1,0 +1,67 @@
+#ifndef ME_STRUCTURE_BLUEPRINT_H
+#define ME_STRUCTURE_BLUEPRINT_H
+
+#define MP_DEFAULT_START_HEIGHT 20
+#define MP_DEFAULT_START_WIDTH 50
+
+typedef int(*CHECK_FUNC_T)(char*);
+
+typedef struct math_structure_blueprint_set {
+    int msb_i; // next append loc
+    int msb_size;
+    struct math_structure_blueprint* msb_arr;
+} math_structure_blueprint_set_t;
+
+typedef struct math_structure_blueprint {
+    char* code;
+    char* character;
+    // int paint_box;
+    int start_width;
+    int start_height;
+    struct delta_xy* item_delta_set;
+    CHECK_FUNC_T check_func;
+} math_structure_blueprint_t;
+
+typedef struct delta_xy {
+    int length;
+    int* dx;
+    int* dy;
+    int* height;
+} delta_xy_t;
+
+math_structure_blueprint_set_t* math_structure_blueprint_set_defining();
+
+struct delta_xy* delta_xy_append(struct delta_xy* delta, int dx, int dy, int height);
+struct delta_xy* delta_xy_create_first(int dx, int dy, int height);
+
+void math_structure_blueprint_set_test_print(
+    math_structure_blueprint_set_t* msbs
+);
+
+void math_structure_blueprint_set_append(
+    math_structure_blueprint_set_t* msbs, 
+    char* code, 
+    char* character, 
+    // int paint_box, 
+    // int no_item, 
+    int start_width, 
+    int start_height, 
+    struct delta_xy* item_delta_set,
+    CHECK_FUNC_T check_func
+);
+
+void math_structure_blueprint_copy(
+    math_structure_blueprint_t* msb_store,
+    math_structure_blueprint_t* msb_source
+);
+
+math_structure_blueprint_set_t* math_structure_blueprint_set_create();
+
+// Check Function 
+int cf_alphabetic_singular(char* c);
+
+struct delta_xy* delta_xy_create_4(
+    int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4
+);
+
+#endif
