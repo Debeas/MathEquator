@@ -49,7 +49,6 @@ void math_structure_free(
 struct math_structure* math_structure_create(
     math_structure_blueprint_t* msb, int x, int y, math_structure_t** item_arr
 );
-
-void math_data_paint(HDC hdc, struct math_entry_data* med_main);
-void paint_math_structure(HDC hdc, struct math_structure* structure);
+void math_data_paint(HDC hdc, struct math_entry_data* med_main, int paint_box);
+void paint_math_structure(HDC hdc, struct math_structure* structure, int paint_box);
 #endif

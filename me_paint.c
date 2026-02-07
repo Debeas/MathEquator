@@ -76,7 +76,7 @@ void paint_editable_box(struct box* box, HDC hdc) {
 /**
  * Recursive thing that paints structure.
  */
-void paint_math_structure(HDC hdc, struct math_structure* structure) {
+void paint_math_structure(HDC hdc, struct math_structure* structure, int paint_box) {
     HFONT font = CreateFont(18, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Arial" );
     HFONT hOldFont = (HFONT)SelectObject(hdc, font);
 
@@ -84,10 +84,10 @@ void paint_math_structure(HDC hdc, struct math_structure* structure) {
     SetBkMode(hdc, TRANSPARENT); // Transparent background
     TextOut(hdc, structure->box->x, structure->box->y, structure->character, strlen(structure->character));
 
-    if (structure->paint_box) paint_editable_box(structure->box, hdc);
+    if (paint_box) paint_editable_box(structure->box, hdc);
 
     for (int i = 0; i < structure->no_item; i++) {
-        if (structure->item_p_arr[i] != NULL) paint_math_structure(hdc, structure->item_p_arr[i]);
+        if (structure->item_p_arr[i] != NULL) paint_math_structure(hdc, structure->item_p_arr[i], paint_box);
     }
 
 
@@ -154,9 +154,9 @@ void math_structure_free(
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void math_data_paint(HDC hdc, struct math_entry_data* med) {
+void math_data_paint(HDC hdc, struct math_entry_data* med, int paint_box) {
     for (int i = 0; i < (med->i_request); i++) {
-        paint_math_structure(hdc, med->requests[i]);
+        paint_math_structure(hdc, med->requests[i], paint_box);
     }
 }
 

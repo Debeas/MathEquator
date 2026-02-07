@@ -12,18 +12,26 @@
 #define EDIT_MATH 0x1001
 #define BUTTON_MATH 0x1002
 #define BUTTON_REPAINT 0x1003
+#define BUTTON_BOX_PAINT 0x1004
  
 
 LRESULT CALLBACK EditProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam);
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam);
 #define EQUATION_DISPLAY_EXAMPLE_CLASSNAME "EQUATION_DISPLAY_EXAMPLE_CLASSNAME"
 
+static int main_box_paint = FALSE;
+
 static HWND math_edit;
 static math_structure_t* integral = {0};
 static math_structure_blueprint_set_t* msbs_main = NULL;
 static math_entry_data_t* med_main = NULL;
 
-
+/**
+ * Todo 
+ *  - [x] Box Paint around everything
+ *  - [ ] Handle '{' '}' to do nesting.
+ *  - [ ] Work out a tree datatype to store stuff. 
+ */
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     // Basic Stuff
     srand(time(NULL));
@@ -71,7 +79,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     math_edit = CreateEdit(hInstance, hwnd, x_start, y_start, edit_width, height, "", EDIT_MATH, 0);
     CreateButton(hInstance, hwnd, x_start + x_gap + edit_width, y_start, button_width, height, "Enter", BUTTON_MATH);
     CreateButton(hInstance, hwnd, x_start + x_gap + edit_width, y_start + y_gap + height, button_width, height, "Re-Paint", BUTTON_REPAINT);
-    CreateButton(hInstance, hwnd, x_start + x_gap + edit_width, y_start + 2*(y_gap + height), button_width, height, "Box-Paint", BUTTON_REPAINT);
+    CreateButton(hInstance, hwnd, x_start + x_gap + edit_width, y_start + 2*(y_gap + height), button_width, height, "Box-Paint", BUTTON_BOX_PAINT);
     // WNDPROC OldProc = (WNDPROC) SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR) EditProc);
 
 
@@ -127,6 +135,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam) 
                     printf("REPAINT BUTTON\n");
                     InvalidateRect(hwnd, NULL, TRUE); 
                     break;
+                case BUTTON_BOX_PAINT: 
+                    main_box_paint = !main_box_paint;
+                    InvalidateRect(hwnd, NULL, TRUE);
+                    break;
                 default:
                     break;
             }
@@ -137,7 +149,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam) 
             PAINTSTRUCT ps;
             hdc = BeginPaint(hwnd, &ps);
 
-            math_data_paint(hdc, med_main);
+            math_data_paint(hdc, med_main, main_box_paint);
 
             EndPaint(hwnd, &ps);
         }

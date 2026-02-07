@@ -135,11 +135,36 @@ math_structure_blueprint_set_t* math_structure_blueprint_set_defining() {
         cf_alphabetic_singular
     );
 
+    // Nesting Bracket Expression Open
+    struct delta_xy* open_paranthesis_delta = delta_xy_create_first(5, 0, MP_DEFAULT_START_HEIGHT);
+    delta_xy_append(open_paranthesis_delta, 10, 0, MP_DEFAULT_START_HEIGHT);
+    math_structure_blueprint_set_append(
+        msbs, 
+        "{",  // code
+        "", // character
+        MP_DEFAULT_START_WIDTH, 
+        MP_DEFAULT_START_HEIGHT,
+        open_paranthesis_delta, // delta
+        NULL // check_func
+    );
+
+    // Nesting Bracket Expression Close
+    struct delta_xy* close_paranthesis_delta = delta_xy_create_first(5, 0, MP_DEFAULT_START_HEIGHT);
+    delta_xy_append(close_paranthesis_delta, 10, 0, MP_DEFAULT_START_HEIGHT);
+    math_structure_blueprint_set_append(
+        msbs, 
+        "}",  // code
+        "", // character
+        MP_DEFAULT_START_WIDTH, 
+        MP_DEFAULT_START_HEIGHT,
+        close_paranthesis_delta, // delta
+        NULL // check_func
+    );
+
     for (int i = 0; i < msbs->msb_i; i++) {
         printf("%d: code=%s\n", i, msbs->msb_arr[i].code);
     }
     
-
     return msbs;
 } 
 
