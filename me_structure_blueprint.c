@@ -1,6 +1,8 @@
 #include "me_structure_blueprint.h"
 #include <windows.h>
 #include <string.h>
+#define TEST_MMSBSD 1
+
 
 /**
  * Code Symbols for the TeX, need to have the the things with the backslash
@@ -17,13 +19,27 @@
  * Stupid system everything has a parent open bracket has its closing bracket as
  * a child.
  */
+#define MSBSD_NULL_TO_STRING(a) (a == NULL ? "NULL" : a)
 math_structure_blueprint_set_t* math_structure_blueprint_set_defining() {
     math_structure_blueprint_set_t* msbs = math_structure_blueprint_set_create();
+
+    // Blank/Hold/Space
+    math_structure_blueprint_set_append(
+        msbs, 
+        "Blank",
+        "\\blank",
+        "[]",
+        MP_DEFAULT_START_WIDTH,
+        MP_DEFAULT_START_HEIGHT,
+        NULL, 
+        NULL // check_func
+    );
 
     // sin(x)
     struct delta_xy* sin_delta = delta_xy_create_first(15, 0, MP_DEFAULT_START_HEIGHT);
     math_structure_blueprint_set_append(
         msbs,
+        "Sin Function",
         "\\sin", // code
         "sin", // character
         MP_DEFAULT_START_WIDTH,
@@ -36,6 +52,7 @@ math_structure_blueprint_set_t* math_structure_blueprint_set_defining() {
     struct delta_xy* cos_delta = delta_xy_create_first(15, 0, MP_DEFAULT_START_HEIGHT);
     math_structure_blueprint_set_append(
         msbs,
+        "Cos Function", // name
         "\\cos", // code
         "cos", // character
         MP_DEFAULT_START_WIDTH,
@@ -48,6 +65,7 @@ math_structure_blueprint_set_t* math_structure_blueprint_set_defining() {
     struct delta_xy* tan_delta = delta_xy_create_first(15, 0, MP_DEFAULT_START_HEIGHT);
     math_structure_blueprint_set_append(
         msbs,
+        "Tan Function", // name
         "\\tan", // code
         "tan", // character
         MP_DEFAULT_START_WIDTH,
@@ -60,6 +78,7 @@ math_structure_blueprint_set_t* math_structure_blueprint_set_defining() {
     struct delta_xy* ln_delta = delta_xy_create_first(10, 0, MP_DEFAULT_START_HEIGHT);
     math_structure_blueprint_set_append(
         msbs,
+        "Natural Log Function", // name
         "\\ln", // code
         "ln", // character
         MP_DEFAULT_START_WIDTH,
@@ -73,11 +92,12 @@ math_structure_blueprint_set_t* math_structure_blueprint_set_defining() {
     delta_xy_append(exponent_delta, 5, -5, MP_DEFAULT_START_HEIGHT);
     math_structure_blueprint_set_append(
         msbs,
+        "Exponential Function", // name
         "\\exp", // code
         "", // character
         MP_DEFAULT_START_WIDTH,
         MP_DEFAULT_START_HEIGHT,
-        ln_delta,
+        exponent_delta,
         NULL // check_func
     );
 
@@ -88,8 +108,9 @@ math_structure_blueprint_set_t* math_structure_blueprint_set_defining() {
     delta_xy_append(integral_delta, 5, 0, MP_DEFAULT_START_HEIGHT);
     math_structure_blueprint_set_append(
         msbs,
+        "Integral Structure", // name
         "\\int", // code
-        "\U0283", // character
+        "\u0283", // character
         MP_DEFAULT_START_WIDTH,
         MP_DEFAULT_START_HEIGHT,
         integral_delta,
@@ -105,6 +126,7 @@ math_structure_blueprint_set_t* math_structure_blueprint_set_defining() {
     delta_xy_append(open_bracket_delta, 10, 0, MP_DEFAULT_START_HEIGHT);
     math_structure_blueprint_set_append(
         msbs,
+        "Open Bracket", // name
         "(", // code
         "(", // character
         MP_DEFAULT_START_WIDTH,
@@ -116,6 +138,7 @@ math_structure_blueprint_set_t* math_structure_blueprint_set_defining() {
     // Close Bracket
     math_structure_blueprint_set_append(
         msbs,
+        "Close Bracket", // name
         ")", // code
         ")", // character
         MP_DEFAULT_START_WIDTH,
@@ -127,7 +150,8 @@ math_structure_blueprint_set_t* math_structure_blueprint_set_defining() {
     // Variable 
     math_structure_blueprint_set_append(
         msbs,
-        "",
+        "Variable", // name
+        "\\variable",
         "",
         MP_DEFAULT_START_WIDTH,
         MP_DEFAULT_START_HEIGHT,
@@ -139,7 +163,8 @@ math_structure_blueprint_set_t* math_structure_blueprint_set_defining() {
     struct delta_xy* open_paranthesis_delta = delta_xy_create_first(5, 0, MP_DEFAULT_START_HEIGHT);
     delta_xy_append(open_paranthesis_delta, 10, 0, MP_DEFAULT_START_HEIGHT);
     math_structure_blueprint_set_append(
-        msbs, 
+        msbs,
+        "Open Nest", // name 
         "{",  // code
         "", // character
         MP_DEFAULT_START_WIDTH, 
@@ -153,6 +178,7 @@ math_structure_blueprint_set_t* math_structure_blueprint_set_defining() {
     delta_xy_append(close_paranthesis_delta, 10, 0, MP_DEFAULT_START_HEIGHT);
     math_structure_blueprint_set_append(
         msbs, 
+        "Close Nest", // name
         "}",  // code
         "", // character
         MP_DEFAULT_START_WIDTH, 
@@ -161,23 +187,66 @@ math_structure_blueprint_set_t* math_structure_blueprint_set_defining() {
         NULL // check_func
     );
 
+    printf("Number of msbs->msb_i is %d\n", msbs->msb_i);
+
+    if (TEST_MMSBSD) 
     for (int i = 0; i < msbs->msb_i; i++) {
-        printf("%d: code=%s\n", i, msbs->msb_arr[i].code);
+        math_structure_blueprint_t* msb = &(msbs->msb_arr[i]);
+        printf("Is msb %d, NULL %s\n", i, msb == NULL ? "YES" : "NO");
+        printf("Is msb->item_delta_set %d, NULL %s\n", i, msb->item_delta_set == NULL ? "YES" : "NO");
+        delta_xy_t* dxy = msb->item_delta_set;
+        if (msb != NULL && dxy != NULL) {
+            printf("%d:", i); 
+            printf(" name: \"%s\"", MSBSD_NULL_TO_STRING(msb->name)); 
+            printf(" code=\"%s\"", MSBSD_NULL_TO_STRING(msb->code)); 
+            printf(" character=\"%s\"\n", MSBSD_NULL_TO_STRING(msb->character));
+            
+            if (0 && dxy != NULL) {
+                printf("\tchild count:%d\n", dxy == NULL ? 0 : dxy->length);
+                printf("\t"); 
+                for (int i1 = 0; i1 < dxy->length; i1++) {
+                    printf(
+                        "(%d, %d, %d), ", 
+                        dxy->dx[i1], 
+                        dxy->dy[i1], 
+                        dxy->height[i1]
+                    );
+                }
+                printf("\n"); 
+            }
+        } else {
+            printf("bar\n");
+        }
     }
     
     return msbs;
 } 
 
+// void math_structure_blueprint_set_free(math_structure_blueprint_set_t* msbs) {
+//     for (int i = 0; i < msbs->msb_i; i++) {
+//         math_structure_blueprint_free(&(msbs->msb_arr[i]));
+//     }
+    
+//     free(msbs->msb_arr);
+//     free(msbs);
+// }
 
-
+math_structure_blueprint_set_t* math_structure_blueprint_set_create() {
+    math_structure_blueprint_set_t* msbs = malloc(sizeof(math_structure_blueprint_set_t));
+    msbs->msb_arr = NULL;
+    msbs->msb_i = 0;
+    msbs->msb_size = 0;
+    return msbs;
+}
 
 struct delta_xy* delta_xy_create_4(
     int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4
 ) {
     struct delta_xy* delta_grand = malloc(sizeof(struct delta_xy));
     delta_grand->length = 4;
-    delta_grand->dx = calloc(4, sizeof(struct delta_xy));
-    delta_grand->dy = calloc(4, sizeof(struct delta_xy));
+    delta_grand->dx = calloc(4, sizeof(int));
+    delta_grand->dy = calloc(4, sizeof(int));
+    delta_grand->height = calloc(4, sizeof(int));
 
     delta_grand->dx[0] = x1; delta_grand->dy[0] = y1;
     delta_grand->dx[1] = x2; delta_grand->dy[1] = y2;
@@ -247,6 +316,7 @@ math_structure_blueprint_t* math_structure_blueprint_create(
     math_structure_blueprint_t* msb = malloc(sizeof(math_structure_blueprint_t));
     msb->code = code;
     msb->character = character;
+    msb->name = NULL;
     // msb->paint_box = paint_box;
     // msb->no_item = no_item;
     msb->start_width = start_width;
@@ -255,21 +325,15 @@ math_structure_blueprint_t* math_structure_blueprint_create(
     return msb;
 }
 
-math_structure_blueprint_set_t* math_structure_blueprint_set_create() {
-    math_structure_blueprint_set_t* msbs = malloc(sizeof(math_structure_blueprint_set_t));
-    msbs->msb_arr = NULL;
-    msbs->msb_i = 0;
-    msbs->msb_size = 0;
-    return msbs;
-}
+
 
 
 void math_structure_blueprint_copy(
-    math_structure_blueprint_t* msb_store,
-    math_structure_blueprint_t* msb_source
+    math_structure_blueprint_t* msb_store, math_structure_blueprint_t* msb_source
 ) {
     msb_store->code             = msb_source->code;
     msb_store->character        = msb_source->character;
+    msb_store->name             = msb_source->name;
     // msb_store->paint_box        = msb_source->paint_box;
     msb_store->start_width      = msb_source->start_width;
     msb_store->start_height     = msb_source->start_height;
@@ -277,8 +341,23 @@ void math_structure_blueprint_copy(
     msb_store->item_delta_set   = msb_source->item_delta_set;
 }
 
+// void math_structure_blueprint_free(math_structure_blueprint_t* msb) {
+//     if (msb->code != NULL) free(msb->code);
+//     if (msb->character != NULL) free(msb->character);
+//     if (msb->name != NULL) free(msb->name);
+//     free(msb->item_delta_set->dx);
+//     free(msb->item_delta_set->dy);
+//     free(msb->item_delta_set->height);
+//     free(msb->item_delta_set);
+// }
+
+#define MSBSA_set_copy_string(variable, fieldname) \
+variable->fieldname = malloc(sizeof(char) * (strlen(fieldname) + 1)); \
+strcpy(variable->fieldname, fieldname); 
+
 void math_structure_blueprint_set_append(
     math_structure_blueprint_set_t* msbs, 
+    char* name, 
     char* code, 
     char* character, 
     // int paint_box, 
@@ -305,13 +384,23 @@ void math_structure_blueprint_set_append(
         msbs->msb_arr = new_arr;
     }
 
-    msbs->msb_arr[msbs->msb_i].code = code;
-    msbs->msb_arr[msbs->msb_i].character = character;
-    // msbs->msb_arr[msbs->msb_i].paint_box = paint_box;
+    // Blueprint ptr
+    math_structure_blueprint_t* msb = &(msbs->msb_arr[msbs->msb_i]);
+
+    // Name, Code and Character
+    MSBSA_set_copy_string(msb, name);
+    MSBSA_set_copy_string(msb, code);
+    MSBSA_set_copy_string(msb, character);
+
+    // Dimensions
     msbs->msb_arr[msbs->msb_i].start_height = start_height;
     msbs->msb_arr[msbs->msb_i].start_width = start_width;
-    // msbs->msb_arr[msbs->msb_i].no_item = no_item;
+    
+    // Items count is in the item delta
+    // msbs->msb_arr[msbs->msb_i].item_count = (int) (sizeof(item_delta_set) / sizeof(struct delta_xy));
     msbs->msb_arr[msbs->msb_i].item_delta_set = item_delta_set;
+    
+    // Check Function
     msbs->msb_arr[msbs->msb_i].check_func = check_func;
     msbs->msb_i++;
 }
@@ -322,6 +411,7 @@ void math_structure_blueprint_set_test_print(
     printf("Mathematical Structure Blueprint set\n"); 
     printf("\tno_elements: %d\n", msbs->msb_i);
     printf("\n");
+    if (msbs->msb_arr != NULL)
     for (int i = 0; i < msbs->msb_i; i++) {
         printf("%d:\n", i);
         printf("\tcode=%s\n", msbs->msb_arr[i].code);
@@ -329,7 +419,9 @@ void math_structure_blueprint_set_test_print(
         // printf("\tpaint_box=%d\n", msbs->msb_arr[i].paint_box);
         printf("\tstart_height=%d\n", msbs->msb_arr[i].start_height);
         printf("\tstart_width=%d\n", msbs->msb_arr[i].start_width);
+        if(msbs->msb_arr[i].item_delta_set != NULL)
         printf("\titem length=%d\n", msbs->msb_arr[i].item_delta_set->length);
+        if(msbs->msb_arr[i].item_delta_set != NULL)
         for (int i2 = 0; i2 < msbs->msb_arr[i].item_delta_set->length; i2++) {
             printf(
                 "\t\t%d: dx,dy=(%d, %d) height=%d\n", 
@@ -343,14 +435,22 @@ void math_structure_blueprint_set_test_print(
 }
 
 void math_structure_blueprint_set_free(math_structure_blueprint_set_t* msbs) {
+    math_structure_blueprint_t* msb = NULL;
+    delta_xy_t* xy = NULL;
     for (int i = 0; i < msbs->msb_i; i++) {
-        for (int i2 = 0; i2 < msbs->msb_arr[i].item_delta_set->length; i2++) {
-            free(msbs->msb_arr[i].item_delta_set->dx);
-            free(msbs->msb_arr[i].item_delta_set->dy);
-            free(msbs->msb_arr[i].item_delta_set->height);
+        // for (int i2 = 0; i2 < msbs->msb_arr[i].item_delta_set->length; i2++) {
+        msb = &(msbs->msb_arr[i]);
+        xy = msb->item_delta_set;
+        if (xy != NULL) {
+            free(xy->dx);
+            free(xy->dy);
+            free(xy->height);
         }
         
-        free(msbs->msb_arr[i].item_delta_set);
+        if (msb->name != NULL)              free(msb->name);
+        if (msb->code != NULL)              free(msb->code);
+        if (msb->character != NULL)         free(msb->character);
+        if (msb->item_delta_set != NULL)    free(msb->item_delta_set);
     }
     
     free(msbs->msb_arr);

@@ -19,8 +19,6 @@
 
 
 
-#define CHARACTER_BUF_LENGTH 50
-
 void paint_editable_box(struct box* box, HDC hdc) {
     HPEN pen = CreatePen(PS_SOLID, 2, CLICK_COLOUR); 
     HPEN oldPen = SelectObject(hdc, pen);
@@ -82,7 +80,9 @@ void paint_math_structure(HDC hdc, struct math_structure* structure, int paint_b
 
     SetTextColor(hdc, RGB(0x0, 0x0, 0x0));
     SetBkMode(hdc, TRANSPARENT); // Transparent background
-    TextOut(hdc, structure->box->x, structure->box->y, structure->character, strlen(structure->character));
+
+    // Paint Character  
+    TextOut(hdc, structure->box->x, structure->box->y, structure->value, structure->value_len);
 
     if (paint_box) paint_editable_box(structure->box, hdc);
 
@@ -96,51 +96,43 @@ void paint_math_structure(HDC hdc, struct math_structure* structure, int paint_b
 }
 
 
-struct math_structure* math_structure_create(
-    math_structure_blueprint_t* msb, int x, int y, math_structure_t** item_arr
-) {
-    struct math_structure* ms = malloc(sizeof(struct math_structure));
-
-    // box
-    ms->box = malloc(sizeof(struct box));
-    ms->box->height = msb->start_height;
-    ms->box->width = msb->start_width;
-    ms->box->x = x;
-    ms->box->y = y;
-
-    if (msb->character != NULL) {
-        ms->character = malloc(sizeof(char) * CHARACTER_BUF_LENGTH);
-        strcpy(ms->character, msb->character);
-    }
-        
-    // item_arr
-    if (item_arr != NULL) {
-        ms->no_item = msb->item_delta_set->length;
-        ms->item_p_arr = malloc(sizeof(struct math_structure*) * ms->no_item);
-        for (int i = 0; i < ms->no_item; i++) {
-            ms->item_p_arr[i] = item_arr[i];
-        }
-    } else {
-        ms->no_item = 0;
-        ms->item_p_arr = NULL;
-    }
-    
-
-    ms->paint_box = FALSE;
-    return ms;
-}
-
-void math_structure_free(
-    math_structure_t* ms
-) {
-    for (int i = 0; i < ms->no_item; i++) {
-        math_structure_free(ms->item_p_arr[i]);
-    }
-    
-    free(ms);
-}
-
-
+// struct math_structure* math_structure_create(
+//     math_structure_blueprint_t* msb, int x, int y, math_structure_t** item_arr
+// ) {
+//     struct math_structure* ms = malloc(sizeof(struct math_structure));
+//     // box
+//     ms->box = malloc(sizeof(struct box));
+//     ms->box->height = msb->start_height;
+//     ms->box->width = msb->start_width;
+//     ms->box->x = x;
+//     ms->box->y = y;
+//     // v
+//     if (msb->character != NULL) {
+//         ms->character = malloc(sizeof(char) * CHARACTER_BUF_LENGTH);
+//         strcpy(ms->character, msb->character);
+//     }       
+//     // item_arr
+//     if (item_arr != NULL) {
+//         ms->no_item = msb->item_delta_set->length;
+//         ms->item_p_arr = malloc(sizeof(struct math_structure*) * ms->no_item);
+//         for (int i = 0; i < ms->no_item; i++) {
+//             ms->item_p_arr[i] = item_arr[i];
+//         }
+//     } else {
+//         ms->no_item = 0;
+//         ms->item_p_arr = NULL;
+//     }
+//     ms->flag_paint_box = FALSE;
+//     return ms;
+// }
+// void math_structure_free(
+//     math_structure_t* ms
+// ) {
+//     for (int i = 0; i < ms->no_item; i++) {
+//         math_structure_free(ms->item_p_arr[i]);
+//     } 
+//     free(ms);
+// }
 // static struct item* static_integral_item_set[3] = {
 //     (struct item) {.dx = 5, .dy = 0},
 //     (struct item) {.dx = 5, .dy = 20},

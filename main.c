@@ -8,11 +8,14 @@
 #include "basic_stuff.h"
 #include "me_paint.h"
 #include "me_entry.h"
+#include "paint_parse_tree.h"
 
 #define EDIT_MATH 0x1001
 #define BUTTON_MATH 0x1002
 #define BUTTON_REPAINT 0x1003
 #define BUTTON_BOX_PAINT 0x1004
+#define BUTTON_TEST_TREE_MAP 0x1005
+#define BUTTON_TEST_PARSE_TREE 0x1006
  
 
 LRESULT CALLBACK EditProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam);
@@ -20,24 +23,46 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam);
 #define EQUATION_DISPLAY_EXAMPLE_CLASSNAME "EQUATION_DISPLAY_EXAMPLE_CLASSNAME"
 
 static int main_box_paint = FALSE;
+static int main_test_paint_tree_sample = FALSE;
+static int main_test_paint_parse_tree = FALSE;
 
 static HWND math_edit;
 static math_structure_t* integral = {0};
 static math_structure_blueprint_set_t* msbs_main = NULL;
-static math_entry_data_t* med_main = NULL;
+// static me_data_t* med_main = NULL;
+static me_data_tree_t* medt_main = NULL;
+static parse_tree_t* pt_main = NULL;
 
 /**
  * Todo 
  *  - [x] Box Paint around everything
+ *  - [x] Add a Null or Leaf type to be put into empty functions such to fill 
+ *  - [ ] Create a Button test to visually test printing parsing tree
+ * out dimensions.
+ *  - [ ] Work out a tree datatype to store stuff. have a detection function for
+ * each blueprint per character
+ *  - [ ] Scrolling Vertical
  *  - [ ] Handle '{' '}' to do nesting.
- *  - [ ] Work out a tree datatype to store stuff. 
+ * 
+ * Math Applications or Buttons
+ *  - [ ] Derivative Transformations
+ *  - [ ] Cases
+ *  - [ ] Taylor Function
+ * 
+ * Full Features
+ *  - [ ] Saving to a file
+ *  - [ ] Opening a file
+ *  - [ ] ENDM or Railroad diagram
+ *  - [ ] Graphing function
+ *  - [ ] Generate Random Variable shit idk to help with integral
  */
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     // Basic Stuff
     srand(time(NULL));
     make_console();
     msbs_main = math_structure_blueprint_set_defining();
-    med_main = math_entry_data_create(100, 100);
+    // med_main = me_data_create(100, 100);
+    // medt_main = me_data_tree_create(100, 100);
 
     // Window
     HWND hwnd;
@@ -70,16 +95,18 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     int x_start = 50;
     int y_start = 50;
     int edit_width = 800;
-    int button_width = 50;
+    int min_button_width = 50;
     int height = 20;
     int x_gap = 30;
-    int y_gap = 20;
+    int y_gap = 10;
 
     // Buttons and things
     math_edit = CreateEdit(hInstance, hwnd, x_start, y_start, edit_width, height, "", EDIT_MATH, 0);
-    CreateButton(hInstance, hwnd, x_start + x_gap + edit_width, y_start, button_width, height, "Enter", BUTTON_MATH);
-    CreateButton(hInstance, hwnd, x_start + x_gap + edit_width, y_start + y_gap + height, button_width, height, "Re-Paint", BUTTON_REPAINT);
-    CreateButton(hInstance, hwnd, x_start + x_gap + edit_width, y_start + 2*(y_gap + height), button_width, height, "Box-Paint", BUTTON_BOX_PAINT);
+    CreateButton(hInstance, hwnd, x_start + x_gap + edit_width, y_start, min_button_width, height, "Enter", BUTTON_MATH);
+    CreateButton(hInstance, hwnd, x_start + x_gap + edit_width, y_start + y_gap + height, min_button_width, height, "Re-Paint", BUTTON_REPAINT);
+    CreateButton(hInstance, hwnd, x_start + x_gap + edit_width, y_start + 2*(y_gap + height), min_button_width, height, "Box-Paint", BUTTON_BOX_PAINT);
+    CreateButton(hInstance, hwnd, x_start + x_gap + edit_width, y_start + 3*(y_gap + height), min_button_width, height, "TEST TREE MAP", BUTTON_TEST_TREE_MAP);
+    CreateButton(hInstance, hwnd, x_start + x_gap + edit_width, y_start + 4*(y_gap + height), min_button_width, height, "TEST PARSE", BUTTON_TEST_PARSE_TREE);
     // WNDPROC OldProc = (WNDPROC) SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR) EditProc);
 
 
@@ -101,8 +128,9 @@ LRESULT CALLBACK EditProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam) {
         case WM_KEYDOWN: {
             switch (LOWORD(wParam)) {
                 case VK_RETURN:
-                math_entry_handle(math_edit, med_main, msbs_main);
-                break;
+                    // me_handle(math_edit, med_main, msbs_main);
+                    me_handle_2(math_edit, &medt_main, msbs_main);
+                    break;
             }
         }
     }
@@ -121,7 +149,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam) 
             switch (LOWORD(wParam)) {
                 case VK_RETURN:
                 printf("Enter\n");
-                math_entry_handle(math_edit, med_main, msbs_main);
+                // me_handle(math_edit, med_main, msbs_main);
+                me_handle_2(math_edit, &medt_main, msbs_main);
                 break;
             }
         }
@@ -129,7 +158,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam) 
             switch (LOWORD(wParam)) {
                 case BUTTON_MATH:
                     printf("\nMATH BUTTON\n");
-                    math_entry_handle(math_edit, med_main, msbs_main);
+                    // me_handle(math_edit, med_main, msbs_main);
+                    me_handle_2(math_edit, &medt_main, msbs_main);
                     break;
                 case BUTTON_REPAINT:
                     printf("REPAINT BUTTON\n");
@@ -137,6 +167,26 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam) 
                     break;
                 case BUTTON_BOX_PAINT: 
                     main_box_paint = !main_box_paint;
+                    InvalidateRect(hwnd, NULL, TRUE);
+                    break;
+                case BUTTON_TEST_TREE_MAP:
+                    main_test_paint_tree_sample = !main_test_paint_tree_sample;
+                    InvalidateRect(hwnd, NULL, TRUE);
+                    break;
+                case BUTTON_TEST_PARSE_TREE:
+                    printf("Starting the test of making the parse tree\n");
+
+                    main_test_paint_parse_tree = !main_test_paint_parse_tree;
+
+                    if (main_test_paint_parse_tree) {
+
+                        if (pt_main != NULL) me_parse_tree_free(pt_main);
+                        pt_main = me_parse_tree_create_from_blueprint_set(msbs_main);
+                        
+                        me_parse_tree_print(pt_main);
+                    
+                    
+                    }
                     InvalidateRect(hwnd, NULL, TRUE);
                     break;
                 default:
@@ -149,7 +199,30 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam) 
             PAINTSTRUCT ps;
             hdc = BeginPaint(hwnd, &ps);
 
-            math_data_paint(hdc, med_main, main_box_paint);
+            if (main_test_paint_tree_sample) {
+                int a = 0;
+                int width1 = 0;
+                int height1 = 0;
+                int width2 = 0;
+                int height2 = 0;
+                int x1 = 100;
+                int y1 = 100;
+                int x2 = 400;
+                int y2 = 320;
+                paint_box_rectangle(hdc, x1, x1, "Box Rectangle", &width1, &height1);
+                paint_curved_rectangle(hdc, x2, y2, "Curved Rectangle", &width2, &height2);
+                
+                paint_line_to_2(hdc, x1+width1, y1+height1 / 2, x2, y2+height2 / 2, 1);
+                
+            
+            
+            }
+
+            if (pt_main != NULL && main_test_paint_parse_tree) {
+                paint_parse_tree(hdc, pt_main, 100, 100);
+            }
+
+            // math_data_paint(hdc, med_main, main_box_paint);
 
             EndPaint(hwnd, &ps);
         }

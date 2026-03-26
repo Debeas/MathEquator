@@ -17,10 +17,13 @@ SRCS = \
 	me_entry.c \
 	me_paint.c \
 	me_structure_blueprint.c \
+	me_structure.c \
+	me_parse_tree.c \
+	paint_parse_tree.c \
 	basic_stuff.c
 
 equation-display-example:
-	cl main.c $(SRCS) $(LDFLAGS) /Zi /Od
+	cl /utf-8 main.c $(SRCS) $(LDFLAGS) /Zi /Od
 
 clean:
 	del *.exe
