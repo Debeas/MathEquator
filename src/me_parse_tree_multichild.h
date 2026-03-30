@@ -6,45 +6,70 @@
 /**
  * Type of Questions: or node type
  */
-enum MEPTM_TYPE {
-    SINGLE_CHARACTER,
-    NUMERIC,
-    ALPHABETIC,
-    ALPHANUMERIC,
-};
+// enum MEPTM_TYPE {
+//     SINGLE_CHARACTER,
+//     NUMERIC,
+//     ALPHABETIC,
+//     ALPHANUMERIC,
+// };
+
+
+int is_alphabetic(char c);
+int is_numeric(char c);
 
 /**
- * Parse tree needs a head, node count.
+ * Multi Child Parse tree needs a head, node count.
  */
-typedef struct parse_tree {
-    struct parse_node* head;
+typedef struct mcp_tree {
+    struct mcp_node** head_arr;
+    int head_i;
+    int head_len;
     int node_count;
-} parse_tree_t;
+} mcp_tree_t;
 
 /**
  * Needs a type of question,
  */
-typedef struct parse_node {
-    enum MEPTM_TYPE type;
+typedef struct mcp_node {
+    enum special_structure type;
     char c; 
     int id;
     int child_len;
-    struct parse_node** child_arr;
-} parse_node_t;
+    int child_i;
+    struct mcp_node** child_arr;
+} mcp_node_t;
+
+int mcp_tree_parse_code(
+    mcp_tree_t* mcpt,
+    char* code
+);
+int mcp_node_parse_code(
+    mcp_node_t* node,
+    char* code,
+    int code_i,
+    int code_len
+);
 
 
-parse_tree_t* parse_tree_create_from_blueprint(
+mcp_tree_t* mcp_tree_create();
+
+mcp_tree_t* mcp_tree_create_from_blueprint(
     math_structure_blueprint_set_t* msbs
 );
-parse_node_t* parse_tree_create_recursive();
-void parse_tree_free(parse_tree_t* pt);
+
+mcp_node_t* mcp_tree_append_recursive();
+
+void mcp_tree_free(mcp_tree_t* pt);
 
 
-parse_node_t* parse_node_create_leaf(
-    enum MEPTM_TYPE type,
+mcp_node_t* mcp_node_create_leaf(
+    enum special_structure type,
     char c,
     int id
 );
-void parse_node_free(parse_node_t* pn);
+
+void mcp_node_free(mcp_node_t* pn);
+
+mcp_node_t** mcp_node_create_new_arr(int* len, int *i, mcp_node_t** old_arr);
 
 #endif

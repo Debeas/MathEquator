@@ -1,7 +1,7 @@
 #include "me_structure_blueprint.h"
 #include <windows.h>
 #include <string.h>
-#define TEST_MMSBSD 1
+#define TEST_MMSBSD 0
 
 
 /**
