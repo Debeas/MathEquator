@@ -31,7 +31,7 @@ typedef struct mcp_tree {
  * Needs a type of question,
  */
 typedef struct mcp_node {
-    enum special_structure type;
+    // enum special_structure type;
     char c; 
     int id;
     int child_len;
@@ -63,7 +63,7 @@ void mcp_tree_free(mcp_tree_t* pt);
 
 
 mcp_node_t* mcp_node_create_leaf(
-    enum special_structure type,
+    // enum special_structure type,
     char c,
     int id
 );

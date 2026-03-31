@@ -44,6 +44,7 @@ void test_print_out() {
     mcp_tree_t* w = mcp_tree_create_from_blueprint(math_structure_blueprint_set_defining());
     
     // Recurse
+    printf("\tBegin with head_i: %d\n", w->head_i);
     for (size_t i = 0; i < w->head_i; i++) {
         test_print_out_recursive(w->head_arr[i], 0);
     }
@@ -56,7 +57,7 @@ void test_print_out() {
 
 void test_print_out_recursive(mcp_node_t* mcpn, int n) {
     for (int i = 0; i < n; i++) putc(' ', stdout);
-    printf("c: %c, id: %d", mcpn->c,  mcpn->id);
+    printf("c: %c, id: %d \n", mcpn->c,  mcpn->id);
     
     for (int i = 0; i < mcpn->child_i; i++) {
         test_print_out_recursive(mcpn->child_arr[i], n + 1);

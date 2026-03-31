@@ -43,6 +43,7 @@ enum special_structure {
     SINGLE_CHARACTER, NUMERIC, ALPHABETIC, ALPHANUMERIC
 };
 
+static char* safe_strdup(const char* s);
 
 // blueprint set
 math_structure_blueprint_set_t* math_structure_blueprint_set_defining();
@@ -61,7 +62,8 @@ void math_structure_blueprint_set_append(
     int start_width, 
     int start_height, 
     struct delta_xy* item_delta_set,
-    CHECK_FUNC_T check_func
+    CHECK_FUNC_T check_func,
+    enum special_structure
 );
 
 // delta x y
