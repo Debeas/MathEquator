@@ -2,7 +2,7 @@
 #define ME_PARSE_TREE_MULTICHILD_H
 
 #include "me_structure_blueprint.h"
-
+#include "me_character_check.h"
 /**
  * Type of Questions: or node type
  */
@@ -25,6 +25,7 @@ typedef struct mcp_tree {
     int head_i;
     int head_len;
     int node_count;
+    struct character_check_set* cc;
 } mcp_tree_t;
 
 /**
@@ -57,7 +58,14 @@ mcp_tree_t* mcp_tree_create_from_blueprint(
     math_structure_blueprint_set_t* msbs
 );
 
-mcp_node_t* mcp_tree_append_recursive();
+mcp_node_t* mcp_tree_append_recursive(
+    int code_i,
+    int code_len,
+    char* code,
+    // enum special_structure special,
+    int id,
+    mcp_node_t* node
+);
 
 void mcp_tree_free(mcp_tree_t* pt);
 

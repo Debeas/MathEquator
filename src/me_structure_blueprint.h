@@ -5,6 +5,8 @@
 #define MP_DEFAULT_START_WIDTH 50
 
 #include <windows.h>
+#include "me_character_check.h"
+
 
 
 typedef int(*CHECK_FUNC_T)(char*);
@@ -21,7 +23,7 @@ typedef struct math_structure_blueprint {
     char* code;
     char* character;
     int show_character;
-    enum special_structure special;
+    enum character_check special;
     
     // int paint_box;
     int start_width;
@@ -39,9 +41,9 @@ typedef struct delta_xy {
     int* height;
 } delta_xy_t;
 
-enum special_structure {
-    SINGLE_CHARACTER, NUMERIC, ALPHABETIC, ALPHANUMERIC
-};
+// enum special_structure {
+//     SINGLE_CHARACTER, NUMERIC, ALPHABETIC, ALPHANUMERIC
+// };
 
 static char* safe_strdup(const char* s);
 

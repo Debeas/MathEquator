@@ -280,6 +280,7 @@ void delta_xy_free(struct delta_xy* s) {
 
 struct delta_xy* delta_xy_create_first(int dx, int dy, int height) {
     struct delta_xy* delta = malloc(sizeof(struct delta_xy));
+    
     delta->length = 1;
 
     delta->dx = malloc(sizeof(int)); 
@@ -387,7 +388,7 @@ void math_structure_blueprint_set_append(
     int start_height, 
     struct delta_xy* item_delta_set,
     CHECK_FUNC_T check_func,
-    enum special_structure special
+    enum character_check special
 ) {
     if (msbs->msb_arr == NULL || msbs->msb_size == 0) {
         msbs->msb_size++;

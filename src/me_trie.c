@@ -3,7 +3,7 @@
  *  - Take a list of item
  */
 
-#include "me_parse_tree_multichild.h"
+#include "me_trie.h"
 #include "me_structure_blueprint.h"
 
 #define TEST_MPTM 0
@@ -21,9 +21,10 @@ int mcp_tree_parse_code(
             // mcpt->head_arr[i_head]->type == SINGLE_CHARACTER &&
             code[0] == mcpt->head_arr[i_head]->c
         ) {
-            return mcp_node_parse_code(mcpt->head_arr[i_head], code, 0, strlen(code));
+            return mcp_node_parse_code(mcpt->head_arr[i_head], code, 1, strlen(code));
         }
     }
+    return character_check_set_parse(mcpt->cc, code);
 
     return -1;
 }
@@ -59,9 +60,13 @@ mcp_tree_t* mcp_tree_create() {
     mcpt->head_len = 0;
     mcpt->head_i = 0;
     mcpt->head_arr = NULL;
+    mcpt->cc = character_check_set_create();
     return mcpt;
 }
 
+/**
+ * Errors in this function
+ */
 mcp_tree_t* mcp_tree_create_from_blueprint(
     math_structure_blueprint_set_t* msbs
 ) {
@@ -77,6 +82,9 @@ mcp_tree_t* mcp_tree_create_from_blueprint(
     for (int id = 0; id < msbs->msb_i; id++) {
         int code_len = strlen(msbs->msb_arr[id].code);
         cur = &(msbs->msb_arr[id]);
+
+        if (TEST_MPTM) 
+        printf("Beginning insert of %s to the trie\n", cur->name);
             
         // Finding head i
         if (cur->special == SINGLE_CHARACTER) {
@@ -94,10 +102,8 @@ mcp_tree_t* mcp_tree_create_from_blueprint(
         
             // The create new head node
             if (head_i == -1) {
-                if (mcpt->head_i == mcpt->head_len) {
-                    mcp_node_t** new_arr = malloc(sizeof(mcp_node_t*));
-                    mcpt->head_arr = mcp_node_create_new_arr(&(mcpt->head_len), &(mcpt->head_i), mcpt->head_arr);
-                        
+                while (mcpt->head_i >= mcpt->head_len) {
+                    mcpt->head_arr = mcp_node_create_new_arr(&(mcpt->head_len), &(mcpt->head_i), mcpt->head_arr);   
                 }
                 head_i = mcpt->head_i;
                 mcpt->head_arr[mcpt->head_i++] = mcp_node_create_leaf(cur->code[0], (code_len == 1 ? id : -1));
@@ -113,17 +119,22 @@ mcp_tree_t* mcp_tree_create_from_blueprint(
                 1, 
                 strlen(cur->code), // calculates the length of the string excluding null-termination
                 cur->code,
-                cur->special,
+                // cur->special,
                 id,
                 mcpt->head_arr[head_i]
             );
-        } else printf("for id: %d, special: %d and %s\n", id, cur->special, cur->code);
+        } else {
+            character_check_set_set(mcpt->cc, cur->special, id);    
+            printf("for id: %d, special: %d and %s\n", id, cur->special, cur->code);
+        }
     }
     return mcpt;
 }
 
 /**
  * Used to be called at every new index
+ * 
+ * Adding nodes to the trie every time there is node or letter that is not there.
  * 
  * Special Nodes are differently treated and are always just checked once then 
  * they are correct. 
@@ -132,7 +143,7 @@ mcp_tree_t* mcp_tree_create_from_blueprint(
  *  - Is the head of the tree 
  */
 mcp_node_t* mcp_tree_append_recursive(
-    int i,
+    int code_i,
     int code_len,
     char* code,
     // enum special_structure special,
@@ -141,33 +152,43 @@ mcp_node_t* mcp_tree_append_recursive(
 ) {
     int found_flag = FALSE;
 
+
     if (TEST_MPTM) {
+        if (node == NULL) 
+        printf("Node is NULL\n");
         printf("node: %d\n", node);
         printf("node->child_len: %d\n", node->child_len);
         printf("node->child_i: %d\n", node->child_i);
     }
 
+
+    
+
     // Check if the node is normal
-    if (node->child_len > 0) for (int i_child = 0; i_child < node->child_len; i_child++) {
-
-
+    for (int i_child = 0; i_child < node->child_i; i_child++) {
         // Check the single character
         if (
-            i < code_len &&
+            code_i < code_len &&
             // special == SINGLE_CHARACTER &&
-            code[i] == node->child_arr[i_child]->c
+            code[code_i] == node->child_arr[i_child]->c
         ) {
-            if (code_len == 1 + i && node->child_arr[i_child]->id == -1) {
+            // Found node now check if it is terminal
+            if (code_len == 1 + code_i && node->child_arr[i_child]->id == -1) {
+                // Node is terminal
                 node->child_arr[i_child]->id = id;
+                return node;
+            } else {   
+                // Node is not terminal
+                return mcp_tree_append_recursive(code_i + 1, code_len, code, id, (node->child_arr[i_child]));
             }
-            return mcp_tree_append_recursive(i + 1, code_len, code, id, (node->child_arr[i_child]));
         }
     }
 
-    // Create new 
+    // Create new a child node
     if (TEST_MPTM)
-    printf("Error going to be caused.\n");
-    if (node->child_i + 1 >= node->child_len) {
+    printf("Creating a new child node, depth: %d, char: %c\n", code_i, node->c);
+
+    while (node->child_len == 0 || node->child_i + 1 >= node->child_len) {
 
         // Create new array
         node->child_arr = mcp_node_create_new_arr(&(node->child_len), &(node->child_i), node->child_arr);
@@ -182,27 +203,30 @@ mcp_node_t* mcp_tree_append_recursive(
     }
 
     // Add end
-    if (i < code_len) {
-    mcp_node_t* new_child = mcp_node_create_leaf(
-        code[i],
-        (code_len == i + 1 ? id : -1)
-    );
+    if (code_i < code_len) {
+        mcp_node_t* new_child = mcp_node_create_leaf(
+            code[code_i],
+            (code_len == code_i + 1 ? id : -1)
+        );
 
-    node->child_arr[node->child_i++] = new_child;
+       node->child_arr[node->child_i++] = new_child;
 
         return mcp_tree_append_recursive(
-            i + 1, code_len, code, id, new_child
+            code_i + 1, code_len, code, id, new_child
         );
-    } else return node;
+    } else {
+        return node;
+    }
 }
 
 mcp_node_t** mcp_node_create_new_arr(int* len, int *i, mcp_node_t** old_arr) {
     (*len) = ((*len) == 0 ? 2 : 2 * (*len));
-    mcp_node_t** new_arr = calloc(*len, sizeof(mcp_node_t*));
+    mcp_node_t** new_arr = calloc((*len), sizeof(mcp_node_t*));
     for (int i_child = 0; i_child < (*i); i_child++) {
         new_arr[i_child] = old_arr[i_child];
     }
     free(old_arr);
+
     return new_arr;
 }
 
@@ -212,6 +236,9 @@ mcp_node_t* mcp_node_create_leaf(
     char c,
     int id
 ) {
+    if (TEST_MPTM)
+    printf("Creating Leaf %c %d\n", c, id);
+
     mcp_node_t* mcpn = malloc(sizeof(mcp_node_t));
     // mcpn->type = type;
     mcpn->c = c;
@@ -231,6 +258,7 @@ void mcp_tree_free(mcp_tree_t* mcpt) {
         
         free(mcpt->head_arr);
     }
+    character_check_set_free(mcpt->cc);
     free(mcpt);
 }
 
@@ -238,8 +266,7 @@ void mcp_node_free(mcp_node_t* pn) {
     for (int i = 0; i < pn->child_i; i++) {
         mcp_node_free(pn->child_arr[i]);
     }
-    free(pn->child_arr);
-    
+    if (pn->child_arr != NULL) free(pn->child_arr);
     free(pn);
 }
 
