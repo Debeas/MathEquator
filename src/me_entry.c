@@ -2,7 +2,7 @@
 // #include "me_paint.h"
 // #include "me_structure.h"
 #include "me_entry.h"
-#include "me_parse_tree.h"
+// #include "me_parse_tree.h"
 #include <stdio.h>
 
 #define TEST_TREE_NEXT_ITEM 1
@@ -45,8 +45,11 @@ void me_handle_2(HWND hwndCtrl, struct me_data_tree** ptr_data, math_structure_b
     int buf_nword_len = -1;
     int shift_i = 0;
 
-    // Parse Tree
-    parse_tree_t* pt = me_parse_tree_create_from_blueprint_set(msbs);
+    // // Parse Tree
+    // parse_tree_t* pt = me_parse_tree_create_from_blueprint_set(msbs);
+
+    // Trie
+    mcp_trie_t* mcpt = mcp_trie_create_from_blueprint(msbs);
 
     
     // Painting delta_location
@@ -64,8 +67,10 @@ void me_handle_2(HWND hwndCtrl, struct me_data_tree** ptr_data, math_structure_b
         printf("New Word: %s at %d len %d\n", buf_nword, shift_i, buf_nword_len);
         
         // Find Codes loop through things
-        target_i = me_parse_tree_find(pt, buf_nword, buf_nword_len);
+        // target_i = me_parse_tree_find(pt, buf_nword, buf_nword_len);
+        target_i = mcp_trie_parse_code(mcpt, buf_nword); 
         msb = &(msbs->msb_arr[target_i]);
+
         // for (int i = 0; target_i == -1 && i < msbs->msb_i; i++) {
         //     if (strcmp(buf_nword, msbs->msb_arr[i].code) == 0) {
         //         target_i = i;

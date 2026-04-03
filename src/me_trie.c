@@ -9,8 +9,8 @@
 #define TEST_MPTM 0
 
 
-int mcp_tree_parse_code(
-    mcp_tree_t* mcpt,
+int mcp_trie_parse_code(
+    mcp_trie_t* mcpt,
     char* code
 ) {
 
@@ -54,8 +54,8 @@ int mcp_node_parse_code(
     return -1;
 }
 
-mcp_tree_t* mcp_tree_create() {
-    mcp_tree_t* mcpt = malloc(sizeof(mcp_tree_t));
+mcp_trie_t* mcp_trie_create() {
+    mcp_trie_t* mcpt = malloc(sizeof(mcp_trie_t));
     mcpt->node_count = 0;
     mcpt->head_len = 0;
     mcpt->head_i = 0;
@@ -67,10 +67,10 @@ mcp_tree_t* mcp_tree_create() {
 /**
  * Errors in this function
  */
-mcp_tree_t* mcp_tree_create_from_blueprint(
+mcp_trie_t* mcp_trie_create_from_blueprint(
     math_structure_blueprint_set_t* msbs
 ) {
-    mcp_tree_t* mcpt = mcp_tree_create();
+    mcp_trie_t* mcpt = mcp_trie_create();
     mcpt->head_arr = NULL;
     mcpt->head_i = 0;
     mcpt->head_len = 0;
@@ -115,7 +115,7 @@ mcp_tree_t* mcp_tree_create_from_blueprint(
                 printf("mcpt->Head_i: %d, \n", mcpt->head_i);
                 printf("head_i: %d, \n", head_i);
             }
-            if (head_i > -1) mcp_tree_append_recursive(
+            if (head_i > -1) mcp_trie_append_recursive(
                 1, 
                 strlen(cur->code), // calculates the length of the string excluding null-termination
                 cur->code,
@@ -142,7 +142,7 @@ mcp_tree_t* mcp_tree_create_from_blueprint(
  * Return:
  *  - Is the head of the tree 
  */
-mcp_node_t* mcp_tree_append_recursive(
+mcp_node_t* mcp_trie_append_recursive(
     int code_i,
     int code_len,
     char* code,
@@ -179,7 +179,7 @@ mcp_node_t* mcp_tree_append_recursive(
                 return node;
             } else {   
                 // Node is not terminal
-                return mcp_tree_append_recursive(code_i + 1, code_len, code, id, (node->child_arr[i_child]));
+                return mcp_trie_append_recursive(code_i + 1, code_len, code, id, (node->child_arr[i_child]));
             }
         }
     }
@@ -211,7 +211,7 @@ mcp_node_t* mcp_tree_append_recursive(
 
        node->child_arr[node->child_i++] = new_child;
 
-        return mcp_tree_append_recursive(
+        return mcp_trie_append_recursive(
             code_i + 1, code_len, code, id, new_child
         );
     } else {
@@ -250,7 +250,7 @@ mcp_node_t* mcp_node_create_leaf(
 }
 
 
-void mcp_tree_free(mcp_tree_t* mcpt) {
+void mcp_trie_free(mcp_trie_t* mcpt) {
     if (mcpt->head_arr != NULL) {
         for (int i = 0; i < mcpt->head_i; i++) {
             mcp_node_free(mcpt->head_arr[i]);

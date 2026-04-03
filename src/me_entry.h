@@ -3,6 +3,7 @@
 #include <windows.h>
 #include "me_paint.h"
 #include "me_structure.h"
+#include "me_trie.h"
 
 typedef struct math_entry_data {
     int request_size;

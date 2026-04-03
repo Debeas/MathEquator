@@ -13,6 +13,7 @@
 #include "me_paint.h"
 #include "me_entry.h"
 #include "me_structure_blueprint.h"
+#include "me_trie.h"
 
 #define CLICK_SIZE 5
 #define CLICK_COLOUR RGB(0xFF, 0x0, 0x0)

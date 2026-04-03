@@ -20,13 +20,13 @@ int is_numeric(char c);
 /**
  * Multi Child Parse tree needs a head, node count.
  */
-typedef struct mcp_tree {
+typedef struct mcp_trie {
     struct mcp_node** head_arr;
     int head_i;
     int head_len;
     int node_count;
     struct character_check_set* cc;
-} mcp_tree_t;
+} mcp_trie_t;
 
 /**
  * Needs a type of question,
@@ -40,8 +40,8 @@ typedef struct mcp_node {
     struct mcp_node** child_arr;
 } mcp_node_t;
 
-int mcp_tree_parse_code(
-    mcp_tree_t* mcpt,
+int mcp_trie_parse_code(
+    mcp_trie_t* mcpt,
     char* code
 );
 int mcp_node_parse_code(
@@ -52,13 +52,13 @@ int mcp_node_parse_code(
 );
 
 
-mcp_tree_t* mcp_tree_create();
+mcp_trie_t* mcp_trie_create();
 
-mcp_tree_t* mcp_tree_create_from_blueprint(
+mcp_trie_t* mcp_trie_create_from_blueprint(
     math_structure_blueprint_set_t* msbs
 );
 
-mcp_node_t* mcp_tree_append_recursive(
+mcp_node_t* mcp_trie_append_recursive(
     int code_i,
     int code_len,
     char* code,
@@ -67,7 +67,7 @@ mcp_node_t* mcp_tree_append_recursive(
     mcp_node_t* node
 );
 
-void mcp_tree_free(mcp_tree_t* pt);
+void mcp_trie_free(mcp_trie_t* pt);
 
 
 mcp_node_t* mcp_node_create_leaf(
